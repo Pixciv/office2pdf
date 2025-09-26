@@ -1,47 +1,36 @@
-name: Build Office2PDF APK
+name: Arch Linux + LibreOffice Setup
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  build:
+  arch-setup:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        lfs: true
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-    - name: Setup Arch Linux rootfs
-      run: |
-        mkdir -p $HOME/arch-rootfs
-        # rootfs tar.gz dosyasını LFS'den çıkar
-        tar -xf capacitor_apk/android/app/src/main/assets/rootfs/arch-rootfs.tar.gz -C $HOME/arch-rootfs
+      - name: Install proot & dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y proot wget tar xz-utils curl
 
-    - name: Install headless LibreOffice in Arch rootfs
-      run: |
-        sudo pacman -Syu --noconfirm
-        sudo pacman -S --noconfirm libreoffice-fresh
+      - name: Setup Arch Linux rootfs via proot
+        run: |
+          mkdir -p $HOME/arch-rootfs
+          # Minimal Arch bootstrap
+          curl -LO http://mirror.rackspace.com/archlinux/iso/latest/archlinux-bootstrap-x86_64.tar.gz
+          tar -xzf archlinux-bootstrap-*-x86_64.tar.gz --strip-components=1 -C $HOME/arch-rootfs
 
-    - name: Prepare Capacitor project
-      run: |
-        cp -r capacitor_apk/* ./capacitor_apk_copy/
+      - name: Enter Arch chroot and install LibreOffice
+        run: |
+          sudo proot -R $HOME/arch-rootfs -b /proc -b /sys -b /dev /bin/bash -c "
+            pacman -Syu --noconfirm
+            pacman -S --noconfirm libreoffice-fresh
+          "
 
-    - name: Build APK
-      run: |
-        cd capacitor_apk_copy
-        npm install
-        npx cap sync android
-        npx cap copy android
-        cd android
-        ./gradlew assembleRelease
-
-    - name: Upload APK artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: office2pdf-apk
-        path: android/app/build/outputs/apk/release/*.apk
+      - name: Verify LibreOffice
+        run: |
+          sudo proot -R $HOME/arch-rootfs -b /proc -b /sys -b /dev /bin/bash -c "soffice --version"
