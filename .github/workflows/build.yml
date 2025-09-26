@@ -20,24 +20,24 @@ jobs:
       - name: Setup Arch Linux rootfs via proot
         run: |
           mkdir -p $HOME/arch-rootfs
-          # Minimal Arch bootstrap
-          curl -LO http://mirror.rackspace.com/archlinux/iso/latest/archlinux-bootstrap-x86_64.tar.gz
+          # Minimal Arch bootstrap - güncel resmi mirror
+          curl -LO https://mirror.rackspace.com/archlinux/iso/latest/archlinux-bootstrap-x86_64.tar.gz
           tar -xzf archlinux-bootstrap-*-x86_64.tar.gz --strip-components=1 -C $HOME/arch-rootfs
 
-      - name: Initialize pacman keyring
+      - name: Enter Arch chroot and update
         run: |
           sudo proot -R $HOME/arch-rootfs -b /proc -b /sys -b /dev /bin/bash -c "
-            pacman-key --init
-            pacman-key --populate archlinux
+            pacman -Sy --noconfirm
+            pacman -S --noconfirm archlinux-keyring
+            pacman -Syu --noconfirm
           "
 
-      - name: Update Arch and install LibreOffice
+      - name: Install LibreOffice
         run: |
           sudo proot -R $HOME/arch-rootfs -b /proc -b /sys -b /dev /bin/bash -c "
-            pacman -Syu --noconfirm
             pacman -S --noconfirm libreoffice-fresh
           "
 
-      - name: Verify LibreOffice installation
+      - name: Verify LibreOffice
         run: |
           sudo proot -R $HOME/arch-rootfs -b /proc -b /sys -b /dev /bin/bash -c "soffice --version"
