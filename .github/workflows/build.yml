@@ -1,4 +1,4 @@
-name: Build LibreOffice .so for Android
+name: Build LibreOffice for Android
 
 on:
   push:
@@ -6,13 +6,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-android-so:
+  build-android-libs:
     runs-on: ubuntu-latest
     env:
       ANDROID_NDK: /opt/android-ndk
       ANDROID_SDK: /opt/android-sdk
       LIBO_ROOT: ${{ github.workspace }}/libreoffice
       ANDROID_ABI: arm64-v8a
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -28,23 +29,24 @@ jobs:
           wget https://dl.google.com/android/repository/android-ndk-r25b-linux.zip -O ndk.zip
           unzip ndk.zip -d /opt/
           mv /opt/android-ndk-r25b $ANDROID_NDK
+
           wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O sdk.zip
           unzip sdk.zip -d $ANDROID_SDK
           yes | $ANDROID_SDK/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_SDK "platforms;android-21" "build-tools;30.0.3"
 
       - name: Clone LibreOffice
         run: |
-          rm -rf $LIBO_ROOT
           git clone https://github.com/LibreOffice/core.git $LIBO_ROOT
           cd $LIBO_ROOT
-          git checkout stable-7-6
+          git fetch --tags
+          git checkout 7.6.7.2 || git checkout master
 
-      - name: Build LibreOffice .so
+      - name: Run build script
         run: |
-          chmod +x scripts/build-libreoffice-so.sh
-          ./scripts/build-libreoffice-so.sh
+          chmod +x scripts/build-libreoffice.sh
+          ./scripts/build-libreoffice.sh
 
-      - name: Copy .so files to android/jniLibs
+      - name: Copy .so files to repo
         run: |
           mkdir -p android/jniLibs/$ANDROID_ABI
           cp $LIBO_ROOT/instsetoo_native/lib/*.so android/jniLibs/$ANDROID_ABI/
