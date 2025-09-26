@@ -23,14 +23,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential cmake ninja-build clang git python3 python3-pip wget unzip
 
-      - name: Download Android NDK
+      - name: Download and setup Android NDK
         run: |
           wget https://dl.google.com/android/repository/android-ndk-r25b-linux.zip -O ndk.zip
-          unzip ndk.zip -d /opt/android-ndk-r25b
+          unzip -q ndk.zip -d /opt/
+          # NDK zip içinde ekstra klasör varsa düzelt
+          if [ -d /opt/android-ndk-r25b/android-ndk-r25b ]; then
+            mv /opt/android-ndk-r25b/android-ndk-r25b/* /opt/android-ndk-r25b/
+          fi
+          ls $ANDROID_NDK  # RELEASE.TXT ve diğer dosyaları kontrol için
 
-      - name: Download Android SDK
+      - name: Download and setup Android SDK
         run: |
-          mkdir -p $ANDROID_SDK
           wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O sdk.zip
           unzip sdk.zip -d $ANDROID_SDK
           yes | $ANDROID_SDK/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_SDK "platforms;android-21" "build-tools;30.0.3"
@@ -39,9 +43,9 @@ jobs:
         run: |
           git clone https://github.com/LibreOffice/core.git $LIBO_ROOT
           cd $LIBO_ROOT
-          git checkout master   # Stable tag yerine master kullanıyoruz
+          git checkout master  # Eğer stable branch yoksa master kullan
 
-      - name: Build LibreOffice
+      - name: Run build script
         run: |
           chmod +x scripts/build-libreoffice.sh
           ./scripts/build-libreoffice.sh
