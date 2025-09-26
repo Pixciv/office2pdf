@@ -16,19 +16,19 @@ jobs:
       with:
         lfs: true
 
-    - name: Setup Debian rootfs
+    - name: Setup Arch Linux rootfs
       run: |
-        mkdir -p $HOME/debian-rootfs
-        tar -xf android/app/src/main/assets/rootfs/debian-rootfs.tar.gz -C $HOME/debian-rootfs
+        mkdir -p $HOME/arch-rootfs
+        # rootfs tar.gz dosyasını LFS'den çıkar
+        tar -xf capacitor_apk/android/app/src/main/assets/rootfs/arch-rootfs.tar.gz -C $HOME/arch-rootfs
 
-    - name: Install headless LibreOffice
+    - name: Install headless LibreOffice in Arch rootfs
       run: |
-        sudo apt-get update
-        sudo apt-get install -y libreoffice-core libreoffice-writer libreoffice-calc libreoffice-impress libreoffice-java-common
+        sudo pacman -Syu --noconfirm
+        sudo pacman -S --noconfirm libreoffice-fresh
 
     - name: Prepare Capacitor project
       run: |
-        # Capacitor_apk dosyalarını office2pdf içinde kullanabilirsin
         cp -r capacitor_apk/* ./capacitor_apk_copy/
 
     - name: Build APK
@@ -41,7 +41,7 @@ jobs:
         ./gradlew assembleRelease
 
     - name: Upload APK artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: office2pdf-apk
         path: android/app/build/outputs/apk/release/*.apk
