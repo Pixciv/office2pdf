@@ -23,23 +23,27 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential cmake ninja-build clang git python3 python3-pip wget unzip
 
-      - name: Download Android NDK & SDK
+      - name: Download Android NDK
         run: |
-          mkdir -p $ANDROID_NDK $ANDROID_SDK
+          mkdir -p $ANDROID_NDK
           wget https://dl.google.com/android/repository/android-ndk-r25b-linux.zip -O ndk.zip
           unzip ndk.zip -d /opt/
           mv /opt/android-ndk-r25b $ANDROID_NDK
+          cat $ANDROID_NDK/RELEASE.TXT
 
+      - name: Download Android SDK
+        run: |
+          mkdir -p $ANDROID_SDK
           wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O sdk.zip
           unzip sdk.zip -d $ANDROID_SDK
           yes | $ANDROID_SDK/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_SDK "platforms;android-21" "build-tools;30.0.3"
 
       - name: Clone LibreOffice
         run: |
+          mkdir -p $LIBO_ROOT
           git clone https://github.com/LibreOffice/core.git $LIBO_ROOT
           cd $LIBO_ROOT
-          git fetch --tags
-          git checkout 7.6.7.2 || git checkout master
+          git checkout master  # stable branch yoksa master ile devam
 
       - name: Run build script
         run: |
