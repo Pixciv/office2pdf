@@ -34,6 +34,11 @@ jobs:
           unzip sdk.zip -d $ANDROID_SDK
           yes | $ANDROID_SDK/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_SDK "platforms;android-21" "build-tools;30.0.3"
 
+      - name: Prepare LibreOffice directory
+        run: |
+          rm -rf $LIBO_ROOT
+          mkdir -p $LIBO_ROOT
+
       - name: Clone LibreOffice
         run: |
           git clone https://github.com/LibreOffice/core.git $LIBO_ROOT
