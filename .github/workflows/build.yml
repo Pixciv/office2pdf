@@ -1,4 +1,4 @@
-name: Arch Linux + LibreOffice Setup
+name: LibreOffice GitHub Workflow
 
 on:
   push:
@@ -6,38 +6,17 @@ on:
   workflow_dispatch:
 
 jobs:
-  arch-setup:
+  libreoffice:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install proot & dependencies
+      - name: Update and install LibreOffice
         run: |
           sudo apt-get update
-          sudo apt-get install -y proot wget tar xz-utils curl
+          sudo apt-get install -y libreoffice
 
-      - name: Setup Arch Linux rootfs via proot
+      - name: Verify LibreOffice installation
         run: |
-          mkdir -p $HOME/arch-rootfs
-          # Minimal Arch bootstrap - güncel resmi mirror
-          curl -LO https://mirror.rackspace.com/archlinux/iso/latest/archlinux-bootstrap-x86_64.tar.gz
-          tar -xzf archlinux-bootstrap-*-x86_64.tar.gz --strip-components=1 -C $HOME/arch-rootfs
-
-      - name: Enter Arch chroot and update
-        run: |
-          sudo proot -R $HOME/arch-rootfs -b /proc -b /sys -b /dev /bin/bash -c "
-            pacman -Sy --noconfirm
-            pacman -S --noconfirm archlinux-keyring
-            pacman -Syu --noconfirm
-          "
-
-      - name: Install LibreOffice
-        run: |
-          sudo proot -R $HOME/arch-rootfs -b /proc -b /sys -b /dev /bin/bash -c "
-            pacman -S --noconfirm libreoffice-fresh
-          "
-
-      - name: Verify LibreOffice
-        run: |
-          sudo proot -R $HOME/arch-rootfs -b /proc -b /sys -b /dev /bin/bash -c "soffice --version"
+          soffice --version
