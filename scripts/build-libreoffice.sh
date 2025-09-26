@@ -2,9 +2,10 @@
 set -e
 
 export PATH=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
+
 cd $LIBO_ROOT
 
-# Cross compile için autogen.input oluştur
+# Minimal cross compile config
 cat <<EOF > autogen.input
 --with-distro=CPAndroidAarch64
 --build=x86_64-unknown-linux-gnu
@@ -16,4 +17,6 @@ cat <<EOF > autogen.input
 EOF
 
 ./autogen.sh
+
+# Derleme (sadece gerekli .so)
 make -j$(nproc)
