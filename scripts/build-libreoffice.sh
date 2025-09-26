@@ -5,10 +5,9 @@ export PATH=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
 
 cd $LIBO_ROOT
 
-# Cross compile için autogen.input benzeri parametreler
+# Cross compile için autogen.input veya autogen.sh parametreleri
 ./autogen.sh \
   --host=aarch64-linux-android \
-  --build=x86_64-unknown-linux-gnu \
   --with-android-ndk=$ANDROID_NDK \
   --with-android-sdk=$ANDROID_SDK \
   --enable-sal-log \
@@ -18,7 +17,6 @@ cd $LIBO_ROOT
   --without-junit \
   --with-theme=colibre \
   --disable-poppler \
-  --disable-odk \
   --enable-android-lok \
   --with-android-api-level=21 \
   --with-android-package-name=com.collabora.libreoffice \
@@ -27,9 +25,7 @@ cd $LIBO_ROOT
   --disable-scripting-javascript \
   --with-lang=de,en-US,es,pt-BR \
   --with-myspell-dicts \
-  --with-docrepair-fonts \
   --enable-pdfimport \
-  --enable-release-build \
-  --enable-option-checking=fatal
+  --enable-release-build
 
 make -j$(nproc)
